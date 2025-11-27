@@ -25,5 +25,53 @@
 </head>
 <body>
     <img src="yodner.png" alt="Screenshot">
+    <script>
+document.body.addEventListener('click', function(e) {
+    // Create 5-10 emoji elements
+    const emojiCount = Math.floor(Math.random() * 6) + 5;
+    
+    for (let i = 0; i < emojiCount; i++) {
+        const emoji = document.createElement('div');
+        emoji.textContent = '🧌';
+        emoji.style.position = 'fixed';
+        emoji.style.left = e.clientX + 'px';
+        emoji.style.top = e.clientY + 'px';
+        emoji.style.fontSize = '24px';
+        emoji.style.pointerEvents = 'none';
+        emoji.style.zIndex = '9999';
+        
+        // Random angle for burst effect
+        const angle = (Math.PI * 2 * i) / emojiCount;
+        const velocity = 100 + Math.random() * 100;
+        const vx = Math.cos(angle) * velocity;
+        const vy = Math.sin(angle) * velocity;
+        
+        document.body.appendChild(emoji);
+        
+        // Animate
+        let posX = e.clientX;
+        let posY = e.clientY;
+        let opacity = 1;
+        
+        const animate = () => {
+            posX += vx * 0.016;
+            posY += vy * 0.016;
+            opacity -= 0.02;
+            
+            emoji.style.left = posX + 'px';
+            emoji.style.top = posY + 'px';
+            emoji.style.opacity = opacity;
+            
+            if (opacity > 0) {
+                requestAnimationFrame(animate);
+            } else {
+                emoji.remove();
+            }
+        };
+        
+        animate();
+    }
+});
+</script>
 </body>
 </html>
