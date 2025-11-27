@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yodner</title>
+    <title>My Site</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧌</text></svg>">
     <style>
         body {
@@ -15,63 +15,214 @@
             min-height: 100vh;
             background-color: #222529;
             cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 100 100"><text y=".9em" font-size="90">🧌</text></svg>'), auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
         img {
             max-width: 90%;
             height: auto;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+        
+        /* Story bubble */
+        .story-bubble {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 70px;
+            height: 70px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        
+        .story-ring {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3px;
+        }
+        
+        .story-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #222529;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            border: 3px solid #222529;
+        }
+        
+        /* Story viewer */
+        .story-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .story-viewer.active {
+            display: flex;
+        }
+        
+        .story-progress {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            height: 3px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .story-progress-bar {
+            height: 100%;
+            background-color: #fff;
+            width: 0%;
+            animation: progress 5s linear forwards;
+        }
+        
+        @keyframes progress {
+            to { width: 100%; }
+        }
+        
+        .story-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .story-emoji {
+            font-size: 120px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .story-text {
+            color: #fff;
+            font-size: 48px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .story-close-hint {
+            position: absolute;
+            bottom: 30px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
-    <img src="yodner.png" alt="Screenshot">
-    <script>
-document.body.addEventListener('click', function(e) {
-    // Create 5-10 emoji elements
-    const emojiCount = Math.floor(Math.random() * 6) + 5;
+    <div class="story-bubble" id="storyBubble">
+        <div class="story-ring">
+            <div class="story-avatar">🧌</div>
+        </div>
+    </div>
     
-    for (let i = 0; i < emojiCount; i++) {
-        const emoji = document.createElement('div');
-        emoji.textContent = '🧌';
-        emoji.style.position = 'fixed';
-        emoji.style.left = e.clientX + 'px';
-        emoji.style.top = e.clientY + 'px';
-        emoji.style.fontSize = '24px';
-        emoji.style.pointerEvents = 'none';
-        emoji.style.zIndex = '9999';
+    <div class="story-viewer" id="storyViewer">
+        <div class="story-progress">
+            <div class="story-progress-bar" id="progressBar"></div>
+        </div>
+        <div class="story-content">
+            <div class="story-emoji">🧌</div>
+            <div class="story-text">YODNER</div>
+        </div>
+        <div class="story-close-hint">Tap to close</div>
+    </div>
+    
+    <img src="yodner.png" alt="Yodner">
+    
+    <script>
+        // Story functionality
+        const storyBubble = document.getElementById('storyBubble');
+        const storyViewer = document.getElementById('storyViewer');
+        const progressBar = document.getElementById('progressBar');
         
-        // Random angle for burst effect
-        const angle = (Math.PI * 2 * i) / emojiCount;
-        const velocity = 100 + Math.random() * 100;
-        const vx = Math.cos(angle) * velocity;
-        const vy = Math.sin(angle) * velocity;
-        
-        document.body.appendChild(emoji);
-        
-        // Animate
-        let posX = e.clientX;
-        let posY = e.clientY;
-        let opacity = 1;
-        
-        const animate = () => {
-            posX += vx * 0.016;
-            posY += vy * 0.016;
-            opacity -= 0.02;
+        storyBubble.addEventListener('click', function(e) {
+            e.stopPropagation();
+            storyViewer.classList.add('active');
+            progressBar.style.animation = 'none';
+            setTimeout(() => {
+                progressBar.style.animation = 'progress 5s linear forwards';
+            }, 10);
             
-            emoji.style.left = posX + 'px';
-            emoji.style.top = posY + 'px';
-            emoji.style.opacity = opacity;
+            // Auto close after 5 seconds
+            setTimeout(() => {
+                storyViewer.classList.remove('active');
+            }, 5000);
+        });
+        
+        storyViewer.addEventListener('click', function() {
+            storyViewer.classList.remove('active');
+        });
+        
+        // Emoji burst on click (but not when story is open)
+        document.body.addEventListener('click', function(e) {
+            if (storyViewer.classList.contains('active')) return;
+            if (e.target.closest('.story-bubble')) return;
             
-            if (opacity > 0) {
-                requestAnimationFrame(animate);
-            } else {
-                emoji.remove();
+            const emojiCount = Math.floor(Math.random() * 6) + 5;
+            
+            for (let i = 0; i < emojiCount; i++) {
+                const emoji = document.createElement('div');
+                emoji.textContent = '🧌';
+                emoji.style.position = 'fixed';
+                emoji.style.left = e.clientX + 'px';
+                emoji.style.top = e.clientY + 'px';
+                emoji.style.fontSize = '24px';
+                emoji.style.pointerEvents = 'none';
+                emoji.style.zIndex = '9999';
+                
+                const angle = (Math.PI * 2 * i) / emojiCount;
+                const velocity = 100 + Math.random() * 100;
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity;
+                
+                document.body.appendChild(emoji);
+                
+                let posX = e.clientX;
+                let posY = e.clientY;
+                let opacity = 1;
+                
+                const animate = () => {
+                    posX += vx * 0.016;
+                    posY += vy * 0.016;
+                    opacity -= 0.02;
+                    
+                    emoji.style.left = posX + 'px';
+                    emoji.style.top = posY + 'px';
+                    emoji.style.opacity = opacity;
+                    
+                    if (opacity > 0) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        emoji.remove();
+                    }
+                };
+                
+                animate();
             }
-        };
-        
-        animate();
-    }
-});
-</script>
+        });
+    </script>
 </body>
 </html>
